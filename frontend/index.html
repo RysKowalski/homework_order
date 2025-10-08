@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>FastAPI Data Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f4f4f4;
+    }
+
+    h1,
+    h2 {
+      text-align: center;
+    }
+
+    form {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 500px;
+      margin: 1rem auto;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 0.5rem;
+    }
+
+    select,
+    input,
+    textarea,
+    button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #0078d7;
+      color: white;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    th {
+      background-color: #0078d7;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>FastAPI Data Manager</h1>
+
+  <h2>Add Data</h2>
+  <form id="addForm">
+    <label for="type">Type</label>
+    <select id="type" required>
+      <option value="">Select</option>
+      <option value="homework">homework</option>
+      <option value="kartk">kartk</option>
+      <option value="sprawdz">sprawdz</option>
+    </select>
+
+    <label for="lesson">Lesson</label>
+    <select id="lesson" required>
+      <option value="">Select</option>
+      <option value="niemiecki">niemiecki</option>
+      <option value="angielski">angielski</option>
+      <option value="polski">polski</option>
+      <option value="strony internetowe">strony internetowe</option>
+      <option value="angielski zawodowy">angielski zawodowy</option>
+      <option value="informatyka">informatyka</option>
+      <option value="bhp">bhp</option>
+      <option value="biologia">biologia</option>
+      <option value="edb">edb</option>
+      <option value="religia">religia</option>
+      <option value="fizyka">fizyka</option>
+      <option value="geografia">geografia</option>
+      <option value="biznes i zarządzanie">biznes i zarządzanie</option>
+      <option value="historia">historia</option>
+      <option value="chemia">chemia</option>
+      <option value="podstawy informatyki">podstawy informatyki</option>
+      <option value="inne">inne</option>
+    </select>
+
+    <label for="date">Date</label>
+    <input type="datetime-local" id="date" required>
+
+    <label for="comment">Comment</label>
+    <textarea id="comment" required></textarea>
+
+    <button type="submit">Add</button>
+  </form>
+
+  <h2>Stored Data</h2>
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Lesson</th>
+        <th>Date</th>
+        <th>Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    const API_BASE = "http://localhost:8000";  // Change if backend runs elsewhere
+
+    async function loadData() {
+      const response = await fetch(`${API_BASE}/get_data`);
+      const data = await response.json();
+
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
+
+      data.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                    <td>${item.type}</td>
+                    <td>${item.lesson}</td>
+                    <td>${new Date(item.date).toLocaleString()}</td>
+                    <td>${item.comment}</td>
+                `;
+        tbody.appendChild(row);
+      });
+    }
+
+    document.querySelector("#addForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        type: document.querySelector("#type").value,
+        lesson: document.querySelector("#lesson").value,
+        date: new Date(document.querySelector("#date").value).toISOString(),
+        comment: document.querySelector("#comment").value
+      };
+
+      const response = await fetch(`${API_BASE}/add`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert("Data added successfully");
+        e.target.reset();
+        loadData();
+      } else {
+        alert("Error adding data");
+      }
+    });
+
+    loadData();
+  </script>
+
+</body>
+
+</html>
