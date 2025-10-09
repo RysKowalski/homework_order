@@ -3,24 +3,28 @@
     "type": "homework",
     "lesson": "niemiecki",
     "date": "2025-10-08T14:23:45Z",
-    "comment": "ish shaise skibidi toilet"
+    "comment": "ish shaise skibidi toilet",
+    "state": "done"
   },
   {
     "type": "kartk",
     "lesson": "angielski",
     "date": "2025-10-08T14:23:45Z",
-    "comment": "Ja ish not spek po english"
+    "comment": "Ja ish not spek po english",
+    "state": "work"
   },
   {
     "type": "sprawdz",
     "lesson": "polski",
     "date": "2025-10-08T14:23:45Z",
-    "comment": "Uważam, iż skibidi toilet jest najwybitniejszą animacją wirtualną w wielkich dziejach wielkiego królestwa Polskiego"
+    "comment": "Uważam, iż skibidi toilet jest najwybitniejszą animacją wirtualną w wielkich dziejach wielkiego królestwa Polskiego",
+    "state": "done"
   },
   {
     "type": "homework",
     "lesson": "geografia",
     "date": "2025-10-23T10:12:00Z",
-    "comment": "epicko"
+    "comment": "epicko",
+    "state": "work"
   }
 ]

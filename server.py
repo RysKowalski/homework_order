@@ -34,6 +34,7 @@ class Data(BaseModel):
     lesson: LessonTypes
     date: datetime
     comment: str
+    state: Literal["work", "done"]
 
 
 DATA_FILE = Path("data.json")
@@ -88,10 +89,10 @@ def add(new_thing: Data) -> None:
 
 
 if __name__ == "__main__":
-    # import uvicorn
-    ...
-    # PORT: int = 3000
+    import uvicorn
 
-    # uvicorn.run(app, host="127.0.0.1", port=PORT)
+    PORT: int = 3000
+
+    uvicorn.run(app, host="127.0.0.1", port=PORT)
     # with open("./test.json", "r") as file:
 #    print(json.load(file))
