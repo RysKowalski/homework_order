@@ -8,33 +8,6 @@ from pathlib import Path
 from fastapi import FastAPI
 
 
-LessonTypes = Literal[
-    "niemiecki",
-    "angielski",
-    "polski",
-    "strony internetowe",
-    "angielski zawodowy",
-    "informatyka",
-    "bhp",
-    "biologia",
-    "edb",
-    "religia",
-    "fizyka",
-    "geografia",
-    "biznes i zarządzanie",
-    "historia",
-    "chemia",
-    "podstawy informatyki",
-    "inne",
-]
-
-
-class Data(BaseModel):
-    type: Literal["homework", "kartk", "sprawdz"]
-    lesson: LessonTypes
-    date: datetime
-    comment: str
-    state: Literal["work", "done"]
 
 
 DATA_FILE = Path("data.json")
@@ -86,6 +59,10 @@ def get_data() -> list[Data]:
 def add(new_thing: Data) -> None:
     data.append(new_thing)
     write_data(data)
+
+@app.delete("/delete")
+def delete(id: int) -> None:
+
 
 
 if __name__ == "__main__":
