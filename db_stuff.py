@@ -1,7 +1,6 @@
 import sqlite3
 from sqlite3 import Connection, Cursor
-from typing import Literal
-from pydantic import BaseModel
+from typing import Any, Literal, TypedDict
 from datetime import datetime
 
 LessonTypes = Literal[
@@ -25,7 +24,7 @@ LessonTypes = Literal[
 ]
 
 
-class Data(BaseModel):
+class Data(TypedDict):
     id: int
     type: Literal["homework", "kartk", "sprawdz"]
     lesson: LessonTypes
@@ -90,13 +89,62 @@ def add_something(data: Data, user_id: int) -> None:
 
     cursor.execute(
         """INSERT INTO data (type, lesson, date, comment, state, user_id) VALUES (?, ?, ?, ?, ?, ?)""",
-        (data.type, data.lesson, data.date, data.comment, data.state, user_id),
+        (
+            data["type"],
+            data["lesson"],
+            data["date"],
+            data["comment"],
+            data["state"],
+            user_id,
+        ),
     )
 
     conn.commit()
     conn.close()
 
 
+def get_things_from_user(username: int) -> list[Data]:
+    conn: Connection = sqlite3.connect(DB_PATH)
+    cursor: Cursor = conn.cursor()
+
+    cursor.execute(
+        """SELECT id, type, lesson, date, comment, state FROM data WHERE user_id = ?""",
+        (username,),
+    )
+
+    rows: list[Any] = cursor.fetchall()
+
+    conn.close()
+
+    return_data: list[Data] = []
+
+    for row in rows:
+        return_data.append(
+            {
+                "id": row[0],
+                "type": row[1],
+                "lesson": row[2],
+                "date": row[3],
+                "comment": row[4],
+                "state": row[5],
+            }
+        )
+    return return_data
+
+
 if __name__ == "__main__":
-    add_user("skibidi", "toilet")
-    add_something({"type": "homework", "lesson": "niemiecki", "date": datetime.date()})
+    # add_user("skibidi", "toilet")
+    example_data: Data = {
+        "id": 1,
+        "type": "homework",
+        "lesson": "niemiecki",
+        "date": datetime(2025, 2, 2, 2, 2, 2),
+        "comment": "epic comment",
+        "state": "work",
+    }
+    # add_something(
+    #    example_data,
+    #    1,
+    # )
+    # print(get_things_from_user(1))
+    init_db()

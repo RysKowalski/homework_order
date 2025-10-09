@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from pathlib import Path
 
+from db_stuff import Data
+
 from fastapi import FastAPI
 
 
