@@ -1,3 +1,4 @@
+import hashlib
 import sqlite3
 from sqlite3 import Connection, Cursor
 from typing import Any, Literal, TypedDict
@@ -132,19 +133,25 @@ def get_things_from_user(username: int) -> list[Data]:
     return return_data
 
 
+def get_token_from_credentials(username: str, password: str) -> str:
+    sha256 = hashlib.sha256()
+    sha256.update(password.encode("utf-8"))
+    return sha256.hexdigest()
+
+
 if __name__ == "__main__":
-    # add_user("skibidi", "toilet")
+    # add_user("rys", "kabanos")
+    # init_db()
     example_data: Data = {
         "id": 1,
-        "type": "homework",
-        "lesson": "niemiecki",
+        "type": "kartk",
+        "lesson": "angielski",
         "date": datetime(2025, 2, 2, 2, 2, 2),
         "comment": "epic comment",
         "state": "work",
     }
     # add_something(
     #    example_data,
-    #    1,
+    #    2,
     # )
-    # print(get_things_from_user(1))
-    init_db()
+    print(get_token_from_credentials("username", "password"))
