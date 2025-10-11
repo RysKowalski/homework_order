@@ -1,4 +1,4 @@
-import hashlib
+import uuid
 import sqlite3
 from sqlite3 import Connection, Cursor
 from typing import Any, Literal, TypedDict
@@ -48,7 +48,8 @@ def init_db() -> None:
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            token TEXT NOT NULL,
         );
         """
     )
@@ -77,7 +78,8 @@ def add_user(username: str, password: str) -> None:
     cursor: Cursor = conn.cursor()
 
     cursor.execute(
-        """INSERT INTO users (username, password) VALUES (?, ?)""", (username, password)
+        """INSERT INTO users (username, password, token) VALUES (?, ?, ?)""",
+        (username, password, str(uuid.uuid4())),
     )
 
     conn.commit()
@@ -134,14 +136,13 @@ def get_things_from_user(username: int) -> list[Data]:
 
 
 def get_token_from_credentials(username: str, password: str) -> str:
-    sha256 = hashlib.sha256()
-    sha256.update(password.encode("utf-8"))
-    return sha256.hexdigest()
+    token: str = str(uuid.uuid4())
+    return token
 
 
 if __name__ == "__main__":
     # add_user("rys", "kabanos")
-    # init_db()
+    init_db()
     example_data: Data = {
         "id": 1,
         "type": "kartk",
