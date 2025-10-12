@@ -64,14 +64,14 @@ def add(new_thing: Data) -> None:
 
 @app.delete("/delete")
 def delete(id: int) -> None:
+    ...
 
 
+# if __name__ == "__main__":
+#     import uvicorn
 
-if __name__ == "__main__":
-    import uvicorn
+#     PORT: int = 3000
 
-    PORT: int = 3000
-
-    uvicorn.run(app, host="127.0.0.1", port=PORT)
-    # with open("./test.json", "r") as file:
-#    print(json.load(file))
+#     uvicorn.run(app, host="127.0.0.1", port=PORT)
+#     # with open("./test.json", "r") as file:
+# #    print(json.load(file))

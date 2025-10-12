@@ -33,7 +33,6 @@ class Data(TypedDict):
     comment: str
     state: Literal["work", "done"]
 
-
 DB_PATH: str = "database.sqlite"
 
 
