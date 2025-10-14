@@ -33,6 +33,7 @@ class Data(TypedDict):
     comment: str
     state: Literal["work", "done"]
 
+
 DB_PATH: str = "database.sqlite"
 
 
@@ -48,7 +49,7 @@ def init_db() -> None:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
             password TEXT NOT NULL,
-            token TEXT NOT NULL,
+            token TEXT NOT NULL
         );
         """
     )
@@ -141,7 +142,7 @@ def get_token_from_credentials(username: str, password: str) -> str:
 
 if __name__ == "__main__":
     # add_user("rys", "kabanos")
-    init_db()
+    # init_db()
     example_data: Data = {
         "id": 1,
         "type": "kartk",
