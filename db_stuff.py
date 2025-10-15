@@ -1,7 +1,7 @@
 import uuid
 import sqlite3
 from sqlite3 import Connection, Cursor
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, Optional, TypedDict
 from datetime import datetime
 
 LessonTypes = Literal[
@@ -86,10 +86,22 @@ def add_user(username: str, password: str) -> None:
     conn.close()
 
 
-def add_something(data: Data, user_id: int) -> None:
+def get_user_id(token: str) -> int:
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
+    cursor.execute('SELECT id FROM users WHERE token = ?', (token,))
+
+    user_id: int = cursor.fetchone()[0]
+    conn.close()
+    return user_id
+
+
+def add_something(data: Data, token: str) -> None:
+    conn: Connection = sqlite3.connect(DB_PATH)
+    cursor: Cursor = conn.cursor()
+
+    user_id: int = get_user_id(token)
     cursor.execute(
         """INSERT INTO data (type, lesson, date, comment, state, user_id) VALUES (?, ?, ?, ?, ?, ?)""",
         (
@@ -106,13 +118,15 @@ def add_something(data: Data, user_id: int) -> None:
     conn.close()
 
 
-def get_things_from_user(username: int) -> list[Data]:
+def get_things_from_token(token: str) -> list[Data]:
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
+    user_id: int = get_user_id(token)
+
     cursor.execute(
         """SELECT id, type, lesson, date, comment, state FROM data WHERE user_id = ?""",
-        (username,),
+        (user_id,),
     )
 
     rows: list[Any] = cursor.fetchall()
@@ -136,23 +150,45 @@ def get_things_from_user(username: int) -> list[Data]:
 
 
 def get_token_from_credentials(username: str, password: str) -> str:
-    token: str = str(uuid.uuid4())
+    conn: Connection = sqlite3.connect(DB_PATH)
+    cursor: Cursor = conn.cursor()
+
+    cursor.execute("SELECT token FROM users WHERE (username, password) = (?, ?)", (username, password))
+    token: str = cursor.fetchone()[0]
+
+    conn.close()
     return token
 
+def delete_something(token: str, id: int) -> None:
+    user_id: int = get_user_id(token)
+
+    conn: Connection = sqlite3.connect(DB_PATH)
+    cursor: Cursor = conn.cursor()
+
+    cursor.execute('DELETE FROM data WHERE (id, user_id) = (?, ?)', (id, user_id))
+    
+    conn.commit()
+    conn.close()
+
+def kys(token: str) -> None: # !untested
+    """delete_user untested"""
+    conn: Connection = sqlite3.connect(DB_PATH)
+    cursor: Cursor = conn.cursor()
+
+    cursor.execute('DELETE FROM users WHERE token = ?', (token,))
+
+    conn.commit()
+    conn.close()
+
+def is_valid_token(token: Optional[str]) -> bool:
+    conn: Connection = sqlite3.connect(DB_PATH)
+    cursor: Cursor = conn.cursor()
+
+    cursor.execute('SELECT EXISTS(SELECT 1 FROM users WHERE token = ?)', (token,))
+    exists: bool = cursor.fetchone()[0] == 1
+
+    conn.close()
+    return exists
 
 if __name__ == "__main__":
-    # add_user("rys", "kabanos")
-    # init_db()
-    example_data: Data = {
-        "id": 1,
-        "type": "kartk",
-        "lesson": "angielski",
-        "date": datetime(2025, 2, 2, 2, 2, 2),
-        "comment": "epic comment",
-        "state": "work",
-    }
-    # add_something(
-    #    example_data,
-    #    2,
-    # )
-    print(get_token_from_credentials("username", "password"))
+    init_db()

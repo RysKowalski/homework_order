@@ -1,39 +1,12 @@
-from typing import Literal
-import json
+from typing import Optional
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
-from datetime import datetime
-from pathlib import Path
 
-from db_stuff import Data
+from db_stuff import Data, add_user, add_something, get_things_from_token, get_token_from_credentials, delete_something, kys, is_valid_token 
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, Cookie, HTTPException, status
 
-
-
-
-DATA_FILE = Path("data.json")
 
 app: FastAPI = FastAPI()
-
-
-def write_data(data_list: list[Data]) -> None:
-    """Write a list of Data objects to data.json, converting datetime to ISO strings."""
-    serializable = [item.model_dump(mode="json") for item in data_list]
-    with DATA_FILE.open("w", encoding="utf-8") as f:
-        json.dump(serializable, f, ensure_ascii=False, indent=2)
-
-
-def read_data() -> list[Data]:
-    """Read data.json and convert ISO date strings back into Data objects."""
-    if not DATA_FILE.exists():
-        return []
-    with DATA_FILE.open("r", encoding="utf-8") as f:
-        raw_data = json.load(f)
-    return [Data(**item) for item in raw_data]
-
-
-data: list[Data] = read_data()
 
 
 @app.get("/")
@@ -50,28 +23,34 @@ def js() -> FileResponse:
 def style() -> FileResponse:
     return FileResponse("./frontend/style.css")
 
+@app.post("/login")
+def login(username, password, response: Response) -> dict:
+    token: str = get_token_from_credentials(username, password)
 
-@app.get("/get_data")
-def get_data() -> list[Data]:
-    print(data)
-    return data
+    response.set_cookie(
+        key="token",
+        value=token,
+        httponly=True,
+        samesite="lax"
+    )
+    return {"message": "Token set"}
 
+@app.get('/valid')
+def check_token(token: Optional[str] = Cookie(None)) -> bool:
+    return is_valid_token(token)
 
-@app.post("/add")
-def add(new_thing: Data) -> None:
-    data.append(new_thing)
-    write_data(data)
+@app.post('/debug/add_user')
+def debug_add_user(username: str, password: str) -> None:
+    add_user(username, password)
 
-@app.delete("/delete")
-def delete(id: int) -> None:
-    ...
+@app.get('/debug/get_token')
+def debug_get_token(token: Optional[str] = Cookie(None)) -> str:
+    return str(token)
 
+if __name__ == "__main__":
+    import uvicorn
 
-# if __name__ == "__main__":
-#     import uvicorn
+    PORT: int = 3000
 
-#     PORT: int = 3000
-
-#     uvicorn.run(app, host="127.0.0.1", port=PORT)
-#     # with open("./test.json", "r") as file:
-# #    print(json.load(file))
+    uvicorn.run('server:app', host="127.0.0.1", port=PORT, reload=True)
+    
