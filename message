@@ -1,18 +1,3 @@
-from typing import Optional, TypedDict, cast
-from fastapi.responses import FileResponse
-
-from db_stuff import Data, add_user, add_something, get_things_from_token, get_token_from_credentials, delete_something, kys, is_valid_token 
-
-from fastapi import FastAPI, Response, Cookie, HTTPException, status
-
-
-class LoginCredentials(TypedDict):
-    username: str
-    password: str
-
-app: FastAPI = FastAPI()
-
-
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse("./frontend/index.html")
@@ -28,8 +13,8 @@ def style() -> FileResponse:
     return FileResponse("./frontend/style.css")
 
 @app.post("/login")
-def login(login_credentials: LoginCredentials, response: Response) -> dict:
-    token: str = get_token_from_credentials(login_credentials["username"], login_credentials['password'])
+def login(username, password, response: Response) -> dict:
+    token: str = get_token_from_credentials(username, password)
 
     response.set_cookie(
         key="token",
@@ -83,22 +68,3 @@ def delete_account(username: str, password: str, token: Optional[str] = Cookie(N
         )
     cast_token: str = cast(str, token)
     kys(cast_token)
-
-
-
-
-@app.post('/debug/add_user')
-def debug_add_user(username: str, password: str) -> None:
-    add_user(username, password)
-
-@app.get('/debug/get_token')
-def debug_get_token(token: Optional[str] = Cookie(None)) -> str:
-    return str(token)
-
-if __name__ == "__main__":
-    import uvicorn
-
-    PORT: int = 3000
-
-    uvicorn.run('server:app', host="127.0.0.1", port=PORT, reload=True)
-    

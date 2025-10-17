@@ -3,71 +3,63 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>FastAPI Data Viewer</title>
-  <link rel="stylesheet" href="style.css">
+  <title>lista zadań</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
+  <div id="login-container">
+    <h2>Login</h2>
+    <input id="username" type="text" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button id="login-btn">Login</button>
+    <p id="login-status"></p>
+  </div>
 
-  <h1>FastAPI Data Manager</h1>
+  <div id="main" class="hidden">
+    <h1>Data Dashboard</h1>
 
-  <h2>Add Data</h2>
-  <form id="addForm">
-    <label for="type">Type</label>
-    <select id="type" required>
-      <option value="">Select</option>
-      <option value="homework">homework</option>
-      <option value="kartk">kartk</option>
-      <option value="sprawdz">sprawdz</option>
-    </select>
+    <div id="controls">
+      <button id="refresh-btn">Refresh Data</button>
+      <button id="logout-btn">Logout</button>
+    </div>
 
-    <label for="lesson">Lesson</label>
-    <select id="lesson" required>
-      <option value="">Select</option>
-      <option value="niemiecki">niemiecki</option>
-      <option value="angielski">angielski</option>
-      <option value="polski">polski</option>
-      <option value="strony internetowe">strony internetowe</option>
-      <option value="angielski zawodowy">angielski zawodowy</option>
-      <option value="informatyka">informatyka</option>
-      <option value="bhp">bhp</option>
-      <option value="biologia">biologia</option>
-      <option value="edb">edb</option>
-      <option value="religia">religia</option>
-      <option value="fizyka">fizyka</option>
-      <option value="geografia">geografia</option>
-      <option value="biznes i zarządzanie">biznes i zarządzanie</option>
-      <option value="historia">historia</option>
-      <option value="chemia">chemia</option>
-      <option value="podstawy informatyki">podstawy informatyki</option>
-      <option value="inne">inne</option>
-    </select>
+    <div id="add-form">
+      <h3>Add New Data</h3>
+      <input id="data-id" type="number" placeholder="ID">
+      <select id="data-type">
+        <option value="homework">Homework</option>
+        <option value="kartk">Kartkówka</option>
+        <option value="sprawdz">Sprawdzian</option>
+      </select>
+      <input id="data-lesson" type="text" placeholder="Lesson">
+      <input id="data-date" type="date">
+      <input id="data-comment" type="text" placeholder="Comment">
+      <select id="data-state">
+        <option value="work">Work</option>
+        <option value="done">Done</option>
+      </select>
+      <button id="add-btn">Add</button>
+    </div>
 
-    <label for="date">Date</label>
-    <input type="datetime-local" id="date" required>
+    <h3>Entries</h3>
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Lesson</th>
+          <th>Date</th>
+          <th>Comment</th>
+          <th>State</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
 
-    <label for="comment">Comment</label>
-    <textarea id="comment" required></textarea>
-
-    <button type="submit">Add</button>
-  </form>
-
-  <h2>Stored Data</h2>
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Lesson</th>
-        <th>Date</th>
-        <th>Comment</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-
-  <script src="script.js"></script>
-
+  <script src="/script.js"></script>
 </body>
 
 </html>
