@@ -2,6 +2,7 @@ body {
   font-family: sans-serif;
   background-color: #f4f4f4;
   padding: 20px;
+  margin: 0;
 }
 
 .hidden {
@@ -13,36 +14,195 @@ body {
   background-color: #fff;
   padding: 20px;
   border-radius: 8px;
-  width: 600px;
-  margin: auto;
+  width: 100%;
+  margin: 20px auto;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  box-sizing: border-box;
 }
 
 input,
 select,
 button {
   margin: 5px 0;
-  padding: 8px;
+  padding: 10px;
   width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
 }
 
 button {
   cursor: pointer;
+  transition: background-color 0.2s ease;
+
+}
+
+button:hover {
+  background-color: #eaeaea;
 }
 
 #data-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  font-size: 0.9rem;
 }
 
 #data-table th,
 #data-table td {
-  border: 1px solid #ddd;
+  border: 1px solid black;
   padding: 8px;
   text-align: center;
+  word-break: break-word;
 }
 
-#data-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.work {
+  background-color: red;
+}
+
+.kartk {
+  background-color: orangered;
+}
+
+.homework {
+  background-color: green;
+}
+
+.sprawdz {
+  background-color: red;
+}
+
+.done {
+  background-color: gray;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  #login-container,
+  #main {
+    padding: 15px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-align: center;
+    font-size: 1.2rem;
+  }
+
+  #controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #add-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #data-table th,
+  #data-table td {
+    padding: 6px;
+    font-size: 0.8rem;
+  }
+
+  #data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+
+  button,
+  input,
+  select {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
+  #data-table th,
+  #data-table td {
+    font-size: 0.75rem;
+    padding: 5px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-size: 1rem;
+  }
+}
+
+#login-container {
+  max-width: 400px;
+  /* Prevents it from stretching too wide on tablets/desktops */
+  width: 100%;
+  margin: 40px auto;
+  /* Centers the container */
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#login-container input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+#login-container input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+}
+
+#login-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+#login-btn:hover {
+  background-color: #0056b3;
+}
+
+#login-status {
+  text-align: center;
+  margin-top: 10px;
+  color: red;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  #login-container {
+    padding: 15px;
+    margin: 20px auto;
+  }
+
+  #login-btn {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  input {
+    font-size: 1rem;
+    padding: 10px;
+  }
 }

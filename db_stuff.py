@@ -1,6 +1,7 @@
+from os import curdir
 import uuid
 import sqlite3
-from sqlite3 import Connection, Cursor
+from sqlite3 import Connection, Cursor, connect
 from typing import Any, Literal, Optional, TypedDict
 from datetime import datetime
 
@@ -117,6 +118,18 @@ def add_something(data: Data, token: str) -> None:
     conn.commit()
     conn.close()
 
+def change_state(state: Literal['work', 'done'], element_id: int, token: str) -> None:
+    conn: Connection = sqlite3.connect(DB_PATH)
+    cursor: Cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE data 
+        SET state = ?
+        WHERE (id, user_id) = (?, ?)
+        """, (state, element_id, get_user_id(token)))
+
+    conn.commit()
+    conn.close()
 
 def get_things_from_token(token: str) -> list[Data]:
     conn: Connection = sqlite3.connect(DB_PATH)
