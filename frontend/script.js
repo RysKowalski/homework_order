@@ -69,12 +69,12 @@ async function loadData() {
 
 async function addData() {
   const data = {
-    id: parseInt(document.getElementById("data-id").value),
+    id: 0,
     type: document.getElementById("data-type").value,
     lesson: document.getElementById("data-lesson").value,
     date: document.getElementById("data-date").value,
     comment: document.getElementById("data-comment").value,
-    state: document.getElementById("data-state").value
+    state: 'work'
   };
 
   const response = await fetch("/add_data", {
