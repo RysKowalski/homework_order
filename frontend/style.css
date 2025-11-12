@@ -48,6 +48,14 @@ button {
   word-break: break-word;
 }
 
+#table-body {
+  width: 100%;
+}
+
+#table-body tr td t {
+  font-size: 4rem;
+}
+
 .center {
   display: flex;
   justify-content: center;
@@ -72,47 +80,6 @@ button {
 
 .done {
   background-color: gray;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  body {
-    padding: 10px;
-  }
-
-  #main {
-    padding: 15px;
-  }
-
-  h1,
-  h2,
-  h3 {
-    text-align: center;
-    font-size: 1.2rem;
-  }
-
-  #controls {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  #add-form {
-    display: flex;
-    flex-direction: column;
-  }
-
-  #data-table th,
-  #data-table td {
-    padding: 6px;
-    font-size: 0.8rem;
-  }
-
-  #data-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
 }
 
 #login-container {
@@ -169,9 +136,7 @@ button {
   color: red;
 }
 
-/* #table-body tr td t { */
-/*   word-wrap: normal; */
-/* } */
+
 
 .action_button {
   border: 2px solid black;
