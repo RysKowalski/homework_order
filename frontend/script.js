@@ -1,3 +1,5 @@
+action_button_state = "switch" // switch delete
+
 async function checkLogin() {
   const response = await fetch("/valid");
   return response.ok ? await response.json() : false;
@@ -59,7 +61,7 @@ async function loadData() {
             <td>${item.type}</td>
             <td>${new Date(item.date).toLocaleDateString()}</td>
             <td>${item.comment}</td>
-            <td><button onclick="change_state(${item.id}, '${item.state}')">Delete</button></td>
+            <td><button onclick="action(${item.id}, '${item.state}')" class="${action_button_state}_button action_button">Delete</button></td>
         `;
     tr.classList.add(item.state)
     tr.classList.add(item.type)
@@ -90,27 +92,28 @@ async function addData() {
   }
 }
 
-async function change_state(element_id, state) {
+async function action(element_id, state) {
+  if (action_button_state === "switch") {
+    var new_state = ''
 
-  var new_state = ''
+    if (state == 'work') {
+      new_state = 'done'
+    } else {
+      new_state = 'work'
+    }
 
-  if (state == 'work') {
-    new_state = 'done'
-  } else {
-    new_state = 'work'
-  }
+    const response = await fetch('/change_state', {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 'state': new_state, 'id': element_id })
+    });
 
-  const response = await fetch('/change_state', {
-    method: 'POST',
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ 'state': new_state, 'id': element_id })
-  });
-
-  if (response.ok) {
-    await loadData();
-  } else {
-    alert("Failed to change state")
-  }
+    if (response.ok) {
+      await loadData();
+    } else {
+      alert("Failed to change state")
+    }
+  } else { deleteData(element_id) }
 }
 
 async function deleteData(id) {
@@ -121,6 +124,26 @@ async function deleteData(id) {
     await loadData();
   } else {
     alert("Failed to delete data.");
+  }
+}
+
+async function switch_action_button() {
+  if (action_button_state === "switch") {
+    action_button_state = "delete"
+    delete_class = "switch_button"
+    new_class = "remove_button"
+  } else {
+    action_button_state = "switch"
+    delete_class = "remove_button"
+    new_class = "switch_button"
+  }
+
+  const buttons = document.getElementsByClassName('action_button')
+
+
+  for (const button of buttons) {
+    button.classList.remove(delete_class)
+    button.classList.add(new_class)
   }
 }
 
@@ -140,7 +163,7 @@ document.getElementById("password").addEventListener("keydown", function (event)
 });
 
 document.getElementById("add-btn").addEventListener("click", addData);
-// document.getElementById("refresh-btn").addEventListener("click", loadData);
+document.getElementById("switch-delete-button").addEventListener('click', switch_action_button)
 document.getElementById("logout-btn").addEventListener("click", () => {
   log_out()
   document.getElementById("main").classList.add("hidden");
