@@ -31,7 +31,30 @@ button {
   font-size: 1rem;
 }
 
+#logout-btn {
+  width: 100px;
+  background-color: lightcoral;
+  float: right;
+  border: 2px solid black;
+  border-radius: 10px;
+  font-size: 1.6rem;
+}
 
+#data-type {
+  font-size: 3rem;
+  text-align: center;
+  border: 3px solid black;
+  border-radius: 15px;
+  background-color: lightgreen;
+}
+
+#data-lesson {
+  font-size: 3rem;
+  text-align: center;
+  border: 3px solid black;
+  border-radius: 15px;
+  background-color: lightgreen;
+}
 
 #data-table {
   width: 100%;
@@ -45,14 +68,19 @@ button {
   border: 1px solid black;
   padding: 8px;
   text-align: center;
-  word-break: break-word;
+  word-break: break-all;
+  font-size: 2rem;
+}
+
+#data-table t {
+  font-size: 1.5rem;
 }
 
 #table-body {
   width: 100%;
 }
 
-#table-body tr td t {
+.title {
   font-size: 4rem;
 }
 

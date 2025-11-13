@@ -1,4 +1,4 @@
-action_button_state = "switch" // switch delete
+action_button_state = "switch" // switch remove
 
 async function checkLogin() {
   const response = await fetch("/valid");
@@ -24,8 +24,6 @@ async function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
   const status = document.getElementById("login-status");
-
-
 
   const response = await fetch("/login", {
     method: "POST",
@@ -60,7 +58,7 @@ async function loadData() {
             <td>${item.lesson}</td>
             <td>${item.type}</td>
             <td>${new Date(item.date).toLocaleDateString()}</td>
-            <td>${item.comment}</td>
+            <td><t>${item.comment}</t></td>
             <td><button onclick="action(${item.id}, '${item.state}')" class="${action_button_state}_button action_button">Delete</button></td>
         `;
     tr.classList.add(item.state)
@@ -129,7 +127,7 @@ async function deleteData(id) {
 
 async function switch_action_button() {
   if (action_button_state === "switch") {
-    action_button_state = "delete"
+    action_button_state = "remove"
     delete_class = "switch_button"
     new_class = "remove_button"
   } else {
