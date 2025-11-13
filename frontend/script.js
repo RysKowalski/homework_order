@@ -59,7 +59,7 @@ async function loadData() {
             <td>${item.type}</td>
             <td>${new Date(item.date).toLocaleDateString()}</td>
             <td><t>${item.comment}</t></td>
-            <td><button onclick="action(${item.id}, '${item.state}')" class="${action_button_state}_button action_button">Delete</button></td>
+            <td><button onclick="action(${item.id}, '${item.state}')" class="${action_button_state}_button action_button">switch</button></td>
         `;
     tr.classList.add(item.state)
     tr.classList.add(item.type)
@@ -136,12 +136,13 @@ async function switch_action_button() {
     new_class = "switch_button"
   }
 
+  document.getElementById('switch-delete-button').classList.replace(delete_class, new_class)
+
   const buttons = document.getElementsByClassName('action_button')
 
-
   for (const button of buttons) {
-    button.classList.remove(delete_class)
-    button.classList.add(new_class)
+    button.classList.replace(delete_class, new_class)
+    button.innerHTML = action_button_state
   }
 }
 
