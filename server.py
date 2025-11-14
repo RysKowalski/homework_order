@@ -26,6 +26,11 @@ class StateChange(TypedDict):
     id: int
 
 
+def get_sorted_data(token: str) -> list[Data]:
+    unsorted_data: list[Data] = get_things_from_token(token)
+    print(unsorted_data)
+
+
 app: FastAPI = FastAPI()
 
 
@@ -142,9 +147,13 @@ def debug_get_token(token: Optional[str] = Cookie(None)) -> str:
     return str(token)
 
 
-if __name__ == "__main__":
+def start():
     import uvicorn
 
     PORT: int = 3000
 
     uvicorn.run("server:app", host="0.0.0.0", port=PORT, reload=True)
+
+
+if __name__ == "__main__":
+    get_sorted_data("1395e557-9857-4fcb-ba59-2537563a9bda")

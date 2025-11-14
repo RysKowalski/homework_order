@@ -30,7 +30,7 @@ class Data(TypedDict):
     id: int
     type: Literal["homework", "kartk", "sprawdz"]
     lesson: LessonTypes
-    date: datetime
+    date: str
     comment: str
     state: Literal["work", "done"]
 
@@ -91,7 +91,7 @@ def get_user_id(token: str) -> int:
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
-    cursor.execute('SELECT id FROM users WHERE token = ?', (token,))
+    cursor.execute("SELECT id FROM users WHERE token = ?", (token,))
 
     user_id: int = cursor.fetchone()[0]
     conn.close()
@@ -118,18 +118,23 @@ def add_something(data: Data, token: str) -> None:
     conn.commit()
     conn.close()
 
-def change_state(state: Literal['work', 'done'], element_id: int, token: str) -> None:
+
+def change_state(state: Literal["work", "done"], element_id: int, token: str) -> None:
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE data 
         SET state = ?
         WHERE (id, user_id) = (?, ?)
-        """, (state, element_id, get_user_id(token)))
+        """,
+        (state, element_id, get_user_id(token)),
+    )
 
     conn.commit()
     conn.close()
+
 
 def get_things_from_token(token: str) -> list[Data]:
     conn: Connection = sqlite3.connect(DB_PATH)
@@ -166,11 +171,15 @@ def get_token_from_credentials(username: str, password: str) -> str:
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
-    cursor.execute("SELECT token FROM users WHERE (username, password) = (?, ?)", (username, password))
+    cursor.execute(
+        "SELECT token FROM users WHERE (username, password) = (?, ?)",
+        (username, password),
+    )
     token: str = cursor.fetchone()[0]
 
     conn.close()
     return token
+
 
 def delete_something(token: str, id: int) -> None:
     user_id: int = get_user_id(token)
@@ -178,30 +187,33 @@ def delete_something(token: str, id: int) -> None:
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
-    cursor.execute('DELETE FROM data WHERE (id, user_id) = (?, ?)', (id, user_id))
-    
+    cursor.execute("DELETE FROM data WHERE (id, user_id) = (?, ?)", (id, user_id))
+
     conn.commit()
     conn.close()
 
-def kys(token: str) -> None: # !untested
+
+def kys(token: str) -> None:  # !untested
     """delete_user untested"""
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
-    cursor.execute('DELETE FROM users WHERE token = ?', (token,))
+    cursor.execute("DELETE FROM users WHERE token = ?", (token,))
 
     conn.commit()
     conn.close()
+
 
 def is_valid_token(token: Optional[str]) -> bool:
     conn: Connection = sqlite3.connect(DB_PATH)
     cursor: Cursor = conn.cursor()
 
-    cursor.execute('SELECT EXISTS(SELECT 1 FROM users WHERE token = ?)', (token,))
+    cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE token = ?)", (token,))
     exists: bool = cursor.fetchone()[0] == 1
 
     conn.close()
     return exists
+
 
 if __name__ == "__main__":
     init_db()
