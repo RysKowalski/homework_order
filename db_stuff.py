@@ -3,7 +3,6 @@ import uuid
 import sqlite3
 from sqlite3 import Connection, Cursor, connect
 from typing import Any, Literal, Optional, TypedDict
-from datetime import datetime
 
 LessonTypes = Literal[
     "niemiecki",
