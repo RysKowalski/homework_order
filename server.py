@@ -26,19 +26,55 @@ class StateChange(TypedDict):
     id: int
 
 
-def get_sorted_data(token: str) -> list[Data]:
-    unsorted_data: list[Data] = get_things_from_token(token)
-    sorted_by_date: list[Data] = sorted(unsorted_data, key=lambda x: x["date"])
+def sort_by_date(data: list[Data]) -> list[Data]:
+    return sorted(data, key=lambda x: x["date"])
 
+
+def sort_by_state(data: list[Data]) -> list[Data]:
     done_data: list[Data] = []
     work_data: list[Data] = []
-    for element in sorted_by_date:
+    for element in data:
         if element["state"] == "done":
             done_data.append(element)
         else:
             work_data.append(element)
-
     return work_data + done_data
+
+
+def sort_kart_or_sprawdz(data: list[Data]) -> list[Data]:
+    sorted_data: list[Data] = []
+    same_day: dict[str, list[Data]] = {}
+    for element in data:
+        if element["date"] in same_day:
+            same_day[element["date"]].append(element)
+        else:
+            same_day[element["date"]] = [element]
+
+    for key in same_day.keys():
+        if len(same_day[key]) < 2:
+            sorted_data.append(same_day[key][0])
+            continue
+
+        sprawdz: list[Data] = []
+        rest: list[Data] = []
+        for element in same_day[key]:
+            if element["type"] == "homework":
+                sprawdz.append(element)
+            else:
+                rest.append(element)
+
+        sorted_data.extend(rest + sprawdz)
+
+    return sorted_data
+
+
+def get_sorted_data(token: str) -> list[Data]:
+    sorting: list[Data] = get_things_from_token(token)
+    sorting = sort_by_date(sorting)
+    sorting = sort_kart_or_sprawdz(sorting)
+    sorting = sort_by_state(sorting)
+
+    return sorting
 
 
 app: FastAPI = FastAPI()
@@ -163,6 +199,17 @@ def start():
     PORT: int = 3000
 
     uvicorn.run("server:app", host="0.0.0.0", port=PORT, reload=True)
+
+
+def test():
+    token = get_token_from_credentials("rys", "kowalski")
+    data = get_things_from_token(token)
+
+    for i in data:
+        print(i)
+    print("\n\n\n\n")
+    for i in sort_kart_or_sprawdz(data):
+        print(i)
 
 
 if __name__ == "__main__":
