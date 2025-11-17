@@ -28,7 +28,17 @@ class StateChange(TypedDict):
 
 def get_sorted_data(token: str) -> list[Data]:
     unsorted_data: list[Data] = get_things_from_token(token)
-    print(unsorted_data)
+    sorted_by_date: list[Data] = sorted(unsorted_data, key=lambda x: x["date"])
+
+    done_data: list[Data] = []
+    work_data: list[Data] = []
+    for element in sorted_by_date:
+        if element["state"] == "done":
+            done_data.append(element)
+        else:
+            work_data.append(element)
+
+    return work_data + done_data
 
 
 app: FastAPI = FastAPI()
@@ -87,7 +97,7 @@ def get_data(token: Optional[str] = Cookie(None)) -> list[Data]:
         )
 
     cast_token: str = cast(str, token)
-    return get_things_from_token(cast_token)
+    return get_sorted_data(cast_token)
 
 
 @app.post("/add_data")
@@ -156,4 +166,4 @@ def start():
 
 
 if __name__ == "__main__":
-    get_sorted_data("1395e557-9857-4fcb-ba59-2537563a9bda")
+    start()

@@ -217,3 +217,5 @@ def is_valid_token(token: Optional[str]) -> bool:
 
 if __name__ == "__main__":
     init_db()
+
+    add_user("rys", "kowalski")
