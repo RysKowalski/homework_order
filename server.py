@@ -1,5 +1,6 @@
 from typing import Literal, Optional, TypedDict, cast
 from fastapi.responses import FileResponse
+from datetime import date, datetime, timedelta
 
 from db_stuff import (
     Data,
@@ -30,18 +31,21 @@ def sort_by_date(data: list[Data]) -> list[Data]:
     return sorted(data, key=lambda x: x["date"])
 
 
-def sort_by_state(data: list[Data]) -> list[Data]:
+def sort_by_state(data: list[Data]) -> tuple[list[Data], list[Data]]:
+    """
+    returns (done_data, work_data)
+    """
     done_data: list[Data] = []
     work_data: list[Data] = []
     for element in data:
         if element["state"] == "done":
-            done_data.append(element)
-        else:
             work_data.append(element)
-    return work_data + done_data
+        else:
+            done_data.append(element)
+    return work_data, done_data
 
 
-def sort_kart_or_sprawdz(data: list[Data]) -> list[Data]:
+def sort_by_type(data: list[Data]) -> list[Data]:
     sorted_data: list[Data] = []
     same_day: dict[str, list[Data]] = {}
     for element in data:
@@ -56,25 +60,58 @@ def sort_kart_or_sprawdz(data: list[Data]) -> list[Data]:
             continue
 
         sprawdz: list[Data] = []
-        rest: list[Data] = []
+        kartk: list[Data] = []
+        homework: list[Data] = []
         for element in same_day[key]:
-            if element["type"] == "homework":
+            if element["type"] == "sprawdz":
                 sprawdz.append(element)
+            elif element["type"] == "kartk":
+                kartk.append(element)
             else:
-                rest.append(element)
+                homework.append(element)
 
-        sorted_data.extend(rest + sprawdz)
+        sorted_data.extend(sprawdz)
+        sorted_data.extend(kartk)
+        sorted_data.extend(homework)
 
     return sorted_data
+
+
+def check_three_days(data: list[Data]) -> bool:
+    """returns true if there is any element in next three days, else returns False"""
+    now: datetime = datetime.now()
+    limit: datetime = now + timedelta(days=3)
+
+    for element in data:
+        dt: datetime = datetime.strptime(element["date"], "%Y-%m-%d")
+        if now <= dt <= limit:
+            return True
+    return False
+
+
+def if_thre_days_sort_diffrent(data: list[Data]):
+    if check_three_days(data):
+        return data
+
+    homeworks: list[Data] = []
+    others: list[Data] = []
+    for element in data:
+        if element["type"] == "homework":
+            homeworks.append(element)
+        else:
+            others.append(element)
+
+    return homeworks + others
 
 
 def get_sorted_data(token: str) -> list[Data]:
     sorting: list[Data] = get_things_from_token(token)
     sorting = sort_by_date(sorting)
-    sorting = sort_kart_or_sprawdz(sorting)
-    sorting = sort_by_state(sorting)
-
-    return sorting
+    sorting = sort_by_type(sorting)
+    done_data, work_data = sort_by_state(sorting)
+    work_data = if_thre_days_sort_diffrent(work_data)
+    sorted: list[Data] = work_data + done_data
+    return sorted
 
 
 app: FastAPI = FastAPI()
@@ -203,12 +240,8 @@ def start():
 
 def test():
     token = get_token_from_credentials("rys", "kowalski")
-    data = get_things_from_token(token)
-
-    for i in data:
-        print(i)
-    print("\n\n\n\n")
-    for i in sort_kart_or_sprawdz(data):
+    data = get_sorted_data(token)
+    for i in if_thre_days_sort_diffrent(data):
         print(i)
 
 
