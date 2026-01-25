@@ -1,18 +1,8 @@
 from typing import Literal, Optional, TypedDict, cast
 from fastapi.responses import FileResponse
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
-from db_stuff import (
-    Data,
-    add_user,
-    add_something,
-    change_state,
-    get_things_from_token,
-    get_token_from_credentials,
-    delete_something,
-    kys,
-    is_valid_token,
-)
+from db_stuff import ElementData, Database
 
 from fastapi import FastAPI, Request, Response, Cookie, HTTPException, status
 
@@ -27,16 +17,21 @@ class StateChange(TypedDict):
     id: int
 
 
-def sort_by_date(data: list[Data]) -> list[Data]:
+db: Database = Database("database.sqlite")
+
+
+def sort_by_date(data: list[ElementData]) -> list[ElementData]:
     return sorted(data, key=lambda x: x["date"])
 
 
-def sort_by_state(data: list[Data]) -> tuple[list[Data], list[Data]]:
+def sort_by_state(
+    data: list[ElementData],
+) -> tuple[list[ElementData], list[ElementData]]:
     """
     returns (done_data, work_data)
     """
-    done_data: list[Data] = []
-    work_data: list[Data] = []
+    done_data: list[ElementData] = []
+    work_data: list[ElementData] = []
     for element in data:
         if element["state"] == "done":
             work_data.append(element)
@@ -45,9 +40,9 @@ def sort_by_state(data: list[Data]) -> tuple[list[Data], list[Data]]:
     return work_data, done_data
 
 
-def sort_by_type(data: list[Data]) -> list[Data]:
-    sorted_data: list[Data] = []
-    same_day: dict[str, list[Data]] = {}
+def sort_by_type(data: list[ElementData]) -> list[ElementData]:
+    sorted_data: list[ElementData] = []
+    same_day: dict[str, list[ElementData]] = {}
     for element in data:
         if element["date"] in same_day:
             same_day[element["date"]].append(element)
@@ -59,9 +54,9 @@ def sort_by_type(data: list[Data]) -> list[Data]:
             sorted_data.append(same_day[key][0])
             continue
 
-        sprawdz: list[Data] = []
-        kartk: list[Data] = []
-        homework: list[Data] = []
+        sprawdz: list[ElementData] = []
+        kartk: list[ElementData] = []
+        homework: list[ElementData] = []
         for element in same_day[key]:
             if element["type"] == "sprawdz":
                 sprawdz.append(element)
@@ -77,7 +72,7 @@ def sort_by_type(data: list[Data]) -> list[Data]:
     return sorted_data
 
 
-def check_three_days(data: list[Data]) -> bool:
+def check_three_days(data: list[ElementData]) -> bool:
     """returns true if there is any element in next three days, else returns False"""
     now: datetime = datetime.now()
     limit: datetime = now + timedelta(days=3)
@@ -89,12 +84,12 @@ def check_three_days(data: list[Data]) -> bool:
     return False
 
 
-def if_thre_days_sort_diffrent(data: list[Data]):
+def if_thre_days_sort_diffrent(data: list[ElementData]):
     if check_three_days(data):
         return data
 
-    homeworks: list[Data] = []
-    others: list[Data] = []
+    homeworks: list[ElementData] = []
+    others: list[ElementData] = []
     for element in data:
         if element["type"] == "homework":
             homeworks.append(element)
@@ -104,13 +99,13 @@ def if_thre_days_sort_diffrent(data: list[Data]):
     return homeworks + others
 
 
-def get_sorted_data(token: str) -> list[Data]:
-    sorting: list[Data] = get_things_from_token(token)
+def get_sorted_data(token: str) -> list[ElementData]:
+    sorting: list[ElementData] = db.get_elements_from_token(token)
     sorting = sort_by_date(sorting)
     sorting = sort_by_type(sorting)
     done_data, work_data = sort_by_state(sorting)
     work_data = if_thre_days_sort_diffrent(work_data)
-    sorted: list[Data] = work_data + done_data
+    sorted: list[ElementData] = work_data + done_data
     return sorted
 
 
@@ -143,7 +138,7 @@ def style() -> FileResponse:
 
 @app.post("/login")
 def login(login_credentials: LoginCredentials, response: Response) -> dict:
-    token: str = get_token_from_credentials(
+    token: str = db.get_token_from_credentials(
         login_credentials["username"], login_credentials["password"]
     )
 
@@ -159,12 +154,12 @@ def logout(response: Response) -> dict:
 
 @app.get("/valid")
 def check_token(token: Optional[str] = Cookie(None)) -> bool:
-    return is_valid_token(token)
+    return db.is_token_valid(token)
 
 
 @app.get("/get_data")
-def get_data(token: Optional[str] = Cookie(None)) -> list[Data]:
-    if not is_valid_token(token):
+def get_data(token: Optional[str] = Cookie(None)) -> list[ElementData]:
+    if not db.is_token_valid(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token"
         )
@@ -174,34 +169,34 @@ def get_data(token: Optional[str] = Cookie(None)) -> list[Data]:
 
 
 @app.post("/add_data")
-def add_data(data: Data, token: Optional[str] = Cookie(None)) -> None:
-    if not is_valid_token(token):
+def add_data(data: ElementData, token: Optional[str] = Cookie(None)) -> None:
+    if not db.is_token_valid(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token"
         )
     cast_token: str = cast(str, token)
-    add_something(data, cast_token)
+    db.add_element(data, cast_token)
 
 
 @app.post("/change_state")
 def change_state_endpoint(data: StateChange, token: Optional[str] = Cookie(None)):
-    if not is_valid_token(token):
+    if not db.is_token_valid(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token"
         )
     cast_token: str = cast(str, token)
 
-    change_state(data["state"], data["id"], cast_token)
+    db.change_state_of_element(data["state"], data["id"], cast_token)
 
 
 @app.delete("/delete_data")
 def delete_data(id: int, token: Optional[str] = Cookie(None)) -> None:
-    if not is_valid_token(token):
+    if not db.is_token_valid(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token"
         )
     cast_token: str = cast(str, token)
-    delete_something(cast_token, id)
+    db.delete_element(cast_token, id)
 
 
 @app.delete("/delete_account")
@@ -209,20 +204,20 @@ def delete_account(
     username: str, password: str, token: Optional[str] = Cookie(None)
 ) -> None:
     if (
-        not is_valid_token(token)
-        and get_token_from_credentials(username, password) != token
+        not db.is_token_valid(token)
+        and db.get_token_from_credentials(username, password) != token
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="invalid token or credentials",
         )
     cast_token: str = cast(str, token)
-    kys(cast_token)
+    db.delete_user(cast_token)
 
 
 @app.post("/debug/add_user")
 def debug_add_user(username: str, password: str) -> None:
-    add_user(username, password)
+    db.add_user(username, password)
 
 
 @app.get("/debug/get_token")
@@ -239,7 +234,7 @@ def start():
 
 
 def test():
-    token = get_token_from_credentials("rys", "kowalski")
+    token = db.get_token_from_credentials("rys", "kowalski")
     data = get_sorted_data(token)
     for i in if_thre_days_sort_diffrent(data):
         print(i)

@@ -1,7 +1,6 @@
-from os import curdir
 import uuid
 import sqlite3
-from sqlite3 import Connection, Cursor, connect
+from sqlite3 import Connection, Cursor
 from typing import Any, Literal, Optional, TypedDict
 
 LessonTypes = Literal[
@@ -25,196 +24,196 @@ LessonTypes = Literal[
 ]
 
 
-class Data(TypedDict):
+class ElementData(TypedDict):
     id: int
     type: Literal["homework", "kartk", "sprawdz"]
     lesson: LessonTypes
-    date: str
+    date: str  # "1232-12-31"
     comment: str
     state: Literal["work", "done"]
 
 
-DB_PATH: str = "database.sqlite"
+class UserNotFoundError(LookupError):
+    """Raised when a user does not exists"""
 
 
-def init_db() -> None:
-    """Initialize the database by creating 'users' and 'data' tables if they do not exist."""
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
+class Database:
+    def __init__(self, dbPath: str) -> None:
+        self.dbPath: str = dbPath
 
-    # Create tables separately to avoid syntax issues
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            password TEXT NOT NULL,
-            token TEXT NOT NULL
-        );
-        """
-    )
+    def init_database(self):
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
 
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS data (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT NOT NULL,
-            lesson TEXT NOT NULL,
-            date TEXT NOT NULL,
-            comment TEXT,
-            state BOOLEAN NOT NULL,
-            user_id INTEGER NOT NULL,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        );
-        """
-    )
-
-    conn.commit()
-    conn.close()
-
-
-def add_user(username: str, password: str) -> None:
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
-
-    cursor.execute(
-        """INSERT INTO users (username, password, token) VALUES (?, ?, ?)""",
-        (username, password, str(uuid.uuid4())),
-    )
-
-    conn.commit()
-    conn.close()
-
-
-def get_user_id(token: str) -> int:
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
-
-    cursor.execute("SELECT id FROM users WHERE token = ?", (token,))
-
-    user_id: int = cursor.fetchone()[0]
-    conn.close()
-    return user_id
-
-
-def add_something(data: Data, token: str) -> None:
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
-
-    user_id: int = get_user_id(token)
-    cursor.execute(
-        """INSERT INTO data (type, lesson, date, comment, state, user_id) VALUES (?, ?, ?, ?, ?, ?)""",
-        (
-            data["type"],
-            data["lesson"],
-            data["date"],
-            data["comment"],
-            data["state"],
-            user_id,
-        ),
-    )
-
-    conn.commit()
-    conn.close()
-
-
-def change_state(state: Literal["work", "done"], element_id: int, token: str) -> None:
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        UPDATE data 
-        SET state = ?
-        WHERE (id, user_id) = (?, ?)
-        """,
-        (state, element_id, get_user_id(token)),
-    )
-
-    conn.commit()
-    conn.close()
-
-
-def get_things_from_token(token: str) -> list[Data]:
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
-
-    user_id: int = get_user_id(token)
-
-    cursor.execute(
-        """SELECT id, type, lesson, date, comment, state FROM data WHERE user_id = ?""",
-        (user_id,),
-    )
-
-    rows: list[Any] = cursor.fetchall()
-
-    conn.close()
-
-    return_data: list[Data] = []
-
-    for row in rows:
-        return_data.append(
-            {
-                "id": row[0],
-                "type": row[1],
-                "lesson": row[2],
-                "date": row[3],
-                "comment": row[4],
-                "state": row[5],
-            }
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                password TEXT NOT NULL,
+                token TEXT NOT NULL
+            );
+            """
         )
-    return return_data
 
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                lesson TEXT NOT NULL,
+                date TEXT NOT NULL,
+                comment TEXT,
+                state BOOLEAN NOT NULL,
+                user_id INTEGER NOT NULL,
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            );
+            """
+        )
 
-def get_token_from_credentials(username: str, password: str) -> str:
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
+        conn.commit()
+        conn.close()
 
-    cursor.execute(
-        "SELECT token FROM users WHERE (username, password) = (?, ?)",
-        (username, password),
-    )
-    token: str = cursor.fetchone()[0]
+    def add_user(self, username: str, password: str) -> None:
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
 
-    conn.close()
-    return token
+        cursor.execute(
+            """INSERT INTO users (username, password, token) VALUES (?, ?, ?)""",
+            (username, password, str(uuid.uuid4())),
+        )
 
+        conn.commit()
+        conn.close()
 
-def delete_something(token: str, id: int) -> None:
-    user_id: int = get_user_id(token)
+    def get_user_id(self, token: str) -> int:
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
 
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
+        cursor.execute("SELECT id FROM users WHERE token = ?", (token,))
 
-    cursor.execute("DELETE FROM data WHERE (id, user_id) = (?, ?)", (id, user_id))
+        user_id: int = cursor.fetchone()[0]
+        conn.close()
+        return user_id
 
-    conn.commit()
-    conn.close()
+    def add_element(self, data: ElementData, token: str) -> None:
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
 
+        user_id: int = self.get_user_id(token)
+        cursor.execute(
+            """INSERT INTO data (type, lesson, date, comment, state, user_id) VALUES (?, ?, ?, ?, ?, ?)""",
+            (
+                data["type"],
+                data["lesson"],
+                data["date"],
+                data["comment"],
+                data["state"],
+                user_id,
+            ),
+        )
 
-def kys(token: str) -> None:  # !untested
-    """delete_user untested"""
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
+        conn.commit()
+        conn.close()
 
-    cursor.execute("DELETE FROM users WHERE token = ?", (token,))
+    def change_state_of_element(
+        self, state: Literal["work", "done"], element_id: int, token: str
+    ) -> None:
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
 
-    conn.commit()
-    conn.close()
+        cursor.execute(
+            """
+            UPDATE data 
+            SET state = ?
+            WHERE (id, user_id) = (?, ?)
+            """,
+            (state, element_id, self.get_user_id(token)),
+        )
 
+        conn.commit()
+        conn.close()
 
-def is_valid_token(token: Optional[str]) -> bool:
-    conn: Connection = sqlite3.connect(DB_PATH)
-    cursor: Cursor = conn.cursor()
+    def get_elements_from_token(self, token: str) -> list[ElementData]:
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
 
-    cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE token = ?)", (token,))
-    exists: bool = cursor.fetchone()[0] == 1
+        user_id: int = self.get_user_id(token)
 
-    conn.close()
-    return exists
+        cursor.execute(
+            """SELECT id, type, lesson, date, comment, state FROM data WHERE user_id = ?""",
+            (user_id,),
+        )
+
+        rows: list[Any] = cursor.fetchall()
+
+        conn.close()
+
+        return_data: list[ElementData] = []
+
+        for row in rows:
+            return_data.append(
+                {
+                    "id": row[0],
+                    "type": row[1],
+                    "lesson": row[2],
+                    "date": row[3],
+                    "comment": row[4],
+                    "state": row[5],
+                }
+            )
+        return return_data
+
+    def get_token_from_credentials(self, username: str, password: str) -> str:
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT token FROM users WHERE (username, password) = (?, ?)",
+            (username, password),
+        )
+        row: Optional[tuple[str]] = cursor.fetchone()
+
+        if row is None:
+            raise UserNotFoundError(f"user {username} does not exists")
+
+        token: str = row[0]
+
+        conn.close()
+        return token
+
+    def delete_element(self, token: str, id: int) -> None:
+        user_id: int = self.get_user_id(token)
+
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM data WHERE (id, user_id) = (?, ?)", (id, user_id))
+
+        conn.commit()
+        conn.close()
+
+    def delete_user(self, token: str) -> None:  # !untested
+        """delete_user untested"""
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM users WHERE token = ?", (token,))
+
+        conn.commit()
+        conn.close()
+
+    def is_token_valid(self, token: Optional[str]) -> bool:
+        conn: Connection = sqlite3.connect(self.dbPath)
+        cursor: Cursor = conn.cursor()
+
+        cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE token = ?)", (token,))
+        exists: bool = cursor.fetchone()[0] == 1
+
+        conn.close()
+        return exists
 
 
 if __name__ == "__main__":
-    init_db()
-
-    add_user("rys", "kowalski")
+    db: Database = Database("database.sqlite")
+    db.add_user("rys", "kowalski")
