@@ -221,14 +221,14 @@ def delete_account(
     db.delete_user(cast_token)
 
 
-@app.post("/debug/add_user")
-def debug_add_user(username: str, password: str) -> None:
-    db.add_user(username, password)
-
-
-@app.get("/debug/get_token")
-def debug_get_token(token: Optional[str] = Cookie(None)) -> str:
-    return str(token)
+# @app.post("/debug/add_user")
+# def debug_add_user(username: str, password: str) -> None:
+#     db.add_user(username, password)
+#
+#
+# @app.get("/debug/get_token")
+# def debug_get_token(token: Optional[str] = Cookie(None)) -> str:
+#     return str(token)
 
 
 def start():
