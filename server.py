@@ -2,7 +2,7 @@ from typing import Literal, Optional, TypedDict, cast
 from fastapi.responses import FileResponse
 from datetime import datetime, timedelta
 
-from db_stuff import ElementData, Database
+from db_stuff import ElementData, Database, InvalidCredentialsError
 
 from fastapi import FastAPI, Request, Response, Cookie, HTTPException, status
 
@@ -137,10 +137,16 @@ def style() -> FileResponse:
 
 
 @app.post("/login")
-def login(login_credentials: LoginCredentials, response: Response) -> dict:
-    token: str = db.get_token_from_credentials(
-        login_credentials["username"], login_credentials["password"]
-    )
+def login(login_credentials: LoginCredentials, response: Response) -> dict[str, str]:
+    """{"message": "Token set"}"""
+    try:
+        token: str = db.get_token_from_credentials(
+            login_credentials["username"], login_credentials["password"]
+        )
+    except InvalidCredentialsError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid credentials"
+        )
 
     response.set_cookie(key="token", value=token, httponly=True, samesite="lax")
     return {"message": "Token set"}

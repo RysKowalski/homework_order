@@ -2,7 +2,8 @@ import os
 import sqlite3
 from sqlite3 import Connection, Cursor
 from typing import Any, Literal
-from db_stuff import Database, ElementData, LessonTypes, UserNotFoundError
+
+from db_stuff import Database, ElementData, LessonTypes, InvalidCredentialsError
 
 
 class Utils:
@@ -242,7 +243,7 @@ def test_database_get_token_from_credentials_throws_error() -> None:
     gotError: bool = False
     try:
         db.get_token_from_credentials("non-existent username", "password")
-    except UserNotFoundError:
+    except InvalidCredentialsError:
         gotError = True
 
     assert gotError
@@ -364,7 +365,7 @@ def test_database_delete_user() -> None:
     userDeleted: bool = False
     try:
         db.get_token_from_credentials("username", "password")
-    except UserNotFoundError:
+    except InvalidCredentialsError:
         userDeleted = True
     assert userDeleted
     utils.delete_db()

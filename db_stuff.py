@@ -1,5 +1,5 @@
-import uuid
 import sqlite3
+import uuid
 from sqlite3 import Connection, Cursor
 from typing import Any, Literal, Optional, TypedDict
 
@@ -33,8 +33,8 @@ class ElementData(TypedDict):
     state: Literal["work", "done"]
 
 
-class UserNotFoundError(LookupError):
-    """Raised when a user does not exists"""
+class InvalidCredentialsError(LookupError):
+    """Raised when user with  some credentials is not found"""
 
 
 class Database:
@@ -175,7 +175,7 @@ class Database:
         row: Optional[tuple[str]] = cursor.fetchone()
 
         if row is None:
-            raise UserNotFoundError(f"user {username} does not exists")
+            raise InvalidCredentialsError("user with this credentials  does not exists")
 
         token: str = row[0]
 
