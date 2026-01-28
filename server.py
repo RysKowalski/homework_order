@@ -231,20 +231,16 @@ def delete_account(
 #     return str(token)
 
 
-def start():
+def run():
     import uvicorn
+    from uvicorn.config import LOGGING_CONFIG
 
+    LOGGING_CONFIG["formatters"]["default"]["fmt"] = (
+        "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
+    )
     PORT: int = 3000
-
-    uvicorn.run("server:app", host="0.0.0.0", port=PORT, reload=True)
-
-
-def test():
-    token = db.get_token_from_credentials("rys", "kowalski")
-    data = get_sorted_data(token)
-    for i in if_thre_days_sort_diffrent(data):
-        print(i)
+    uvicorn.run(app)
 
 
 if __name__ == "__main__":
-    start()
+    run()
