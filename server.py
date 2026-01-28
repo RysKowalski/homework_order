@@ -238,7 +238,7 @@ def run():
     LOGGING_CONFIG["formatters"]["default"]["fmt"] = (
         "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
     )
-    PORT: int = 3000
+    PORT: int = 8000
     uvicorn.run(app)
 
 

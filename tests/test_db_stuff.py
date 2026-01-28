@@ -367,6 +367,7 @@ def test_database_delete_user() -> None:
         db.get_token_from_credentials("username", "password")
     except InvalidCredentialsError:
         userDeleted = True
+
     assert userDeleted
     utils.delete_db()
 
