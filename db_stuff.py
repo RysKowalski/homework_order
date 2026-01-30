@@ -7,6 +7,7 @@ LessonTypes = Literal[
     "niemiecki",
     "angielski",
     "polski",
+    "matematyka",
     "strony internetowe",
     "angielski zawodowy",
     "informatyka",
